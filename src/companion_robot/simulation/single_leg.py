@@ -9,7 +9,6 @@ from pathlib import Path
 import mujoco
 import mujoco.viewer
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 MODEL_PATH = PROJECT_ROOT / "assets" / "mujoco" / "models" / "single_leg.xml"
 

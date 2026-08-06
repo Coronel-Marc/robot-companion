@@ -9,6 +9,7 @@ description = "Simulation and control experiments for a companion robot."
 readme = "README.md"
 requires-python = ">=3.10.11"
 dependencies = [
+    "gymnasium>=1.2,<2",
     "mujoco>=3.11,<4",
     "numpy>=2,<3",
 ]

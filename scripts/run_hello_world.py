@@ -1,11 +1,10 @@
 """Executa uma simulação mínima do MuJoCo."""
 
-from pathlib import Path
 import time
+from pathlib import Path
 
 import mujoco
 import mujoco.viewer
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "assets" / "mujoco" / "models" / "hello_world.xml"
