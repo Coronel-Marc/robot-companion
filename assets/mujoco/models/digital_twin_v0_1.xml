@@ -1,0 +1,255 @@
+<mujoco model="digital_twin_v0_1">
+    <compiler angle="degree" autolimits="true"/>
+
+    <option
+        timestep="0.002"
+        gravity="0 0 -9.81"
+        integrator="implicitfast"/>
+
+    <default>
+        <joint
+            type="hinge"
+            damping="0.2"
+            armature="0.005"/>
+
+        <geom
+            density="500"
+            friction="0.8 0.1 0.1"
+            rgba="0.25 0.55 0.85 1"/>
+    </default>
+
+    <worldbody>
+        <light
+            pos="0 0 2"
+            dir="0 0 -1"/>
+
+        <geom
+            name="floor"
+            type="plane"
+            size="2 2 0.05"
+            rgba="0.85 0.85 0.85 1"/>
+
+        <body
+            name="pelvis_root"
+            pos="0 0 0.303">
+
+            <freejoint name="root_freejoint"/>
+
+            <geom
+                name="pelvis_core_geom"
+                type="box"
+                size="0.025 0.03 0.015"
+                density="900"
+                rgba="0.16 0.28 0.55 1"/>
+
+            <body name="pelvis">
+                <geom
+                    name="pelvis_geom"
+                    type="box"
+                    size="0.055 0.09 0.025"
+                    density="900"
+                    rgba="0.20 0.35 0.65 1"/>
+
+                <body
+                    name="trunk"
+                    pos="0 0 0.085">
+
+                    <geom
+                        name="trunk_geom"
+                        type="box"
+                        size="0.045 0.065 0.06"
+                        density="600"
+                        rgba="0.30 0.50 0.75 1"/>
+                </body>
+
+                <body
+                    name="left_hip_yaw_link"
+                    pos="0 0.062 -0.025">
+
+                    <joint
+                        name="left_hip_yaw"
+                        axis="0 0 1"
+                        range="-30 30"/>
+
+                    <geom
+                        name="left_hip_yaw_geom"
+                        type="cylinder"
+                        size="0.022 0.012"
+                        density="650"
+                        rgba="0.20 0.40 0.70 1"/>
+
+                    <body name="left_hip_roll_link">
+                        <joint
+                            name="left_hip_roll"
+                            axis="1 0 0"
+                            range="-35 35"/>
+
+                        <geom
+                            name="left_hip_roll_geom"
+                            type="capsule"
+                            fromto="0 -0.018 0 0 0.018 0"
+                            size="0.016"
+                            density="650"
+                            rgba="0.20 0.40 0.70 1"/>
+
+                        <body name="left_thigh">
+                            <joint
+                                name="left_hip_pitch"
+                                axis="0 1 0"
+                                range="-90 45"/>
+
+                            <geom
+                                name="left_thigh_geom"
+                                type="capsule"
+                                fromto="0 0 0 0 0 -0.125"
+                                size="0.025"
+                                density="650"/>
+
+                            <body
+                                name="left_shank"
+                                pos="0 0 -0.125">
+
+                                <joint
+                                    name="left_knee_pitch"
+                                    axis="0 1 0"
+                                    range="0 130"/>
+
+                                <geom
+                                    name="left_shank_geom"
+                                    type="capsule"
+                                    fromto="0 0 0 0 0 -0.105"
+                                    size="0.017"
+                                    density="450"/>
+
+                                <body
+                                    name="left_ankle"
+                                    pos="0 0 -0.105">
+
+                                    <joint
+                                        name="left_ankle_roll"
+                                        axis="1 0 0"
+                                        range="-30 30"/>
+
+                                    <geom
+                                        name="left_ankle_geom"
+                                        type="cylinder"
+                                        size="0.019 0.022"
+                                        density="550"/>
+
+                                    <body name="left_foot">
+                                        <joint
+                                            name="left_ankle_pitch"
+                                            axis="0 1 0"
+                                            range="-45 45"/>
+
+                                        <geom
+                                            name="left_foot_geom"
+                                            type="box"
+                                            pos="0.012 0 -0.023"
+                                            size="0.045 0.032 0.015"
+                                            density="550"
+                                            rgba="0.25 0.25 0.25 1"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+
+                <body
+                    name="right_hip_yaw_link"
+                    pos="0 -0.062 -0.025">
+
+                    <joint
+                        name="right_hip_yaw"
+                        axis="0 0 1"
+                        range="-30 30"/>
+
+                    <geom
+                        name="right_hip_yaw_geom"
+                        type="cylinder"
+                        size="0.022 0.012"
+                        density="650"
+                        rgba="0.20 0.40 0.70 1"/>
+
+                    <body name="right_hip_roll_link">
+                        <joint
+                            name="right_hip_roll"
+                            axis="1 0 0"
+                            range="-35 35"/>
+
+                        <geom
+                            name="right_hip_roll_geom"
+                            type="capsule"
+                            fromto="0 -0.018 0 0 0.018 0"
+                            size="0.016"
+                            density="650"
+                            rgba="0.20 0.40 0.70 1"/>
+
+                        <body name="right_thigh">
+                            <joint
+                                name="right_hip_pitch"
+                                axis="0 1 0"
+                                range="-90 45"/>
+
+                            <geom
+                                name="right_thigh_geom"
+                                type="capsule"
+                                fromto="0 0 0 0 0 -0.125"
+                                size="0.025"
+                                density="650"/>
+
+                            <body
+                                name="right_shank"
+                                pos="0 0 -0.125">
+
+                                <joint
+                                    name="right_knee_pitch"
+                                    axis="0 1 0"
+                                    range="0 130"/>
+
+                                <geom
+                                    name="right_shank_geom"
+                                    type="capsule"
+                                    fromto="0 0 0 0 0 -0.105"
+                                    size="0.017"
+                                    density="450"/>
+
+                                <body
+                                    name="right_ankle"
+                                    pos="0 0 -0.105">
+
+                                    <joint
+                                        name="right_ankle_roll"
+                                        axis="1 0 0"
+                                        range="-30 30"/>
+
+                                    <geom
+                                        name="right_ankle_geom"
+                                        type="cylinder"
+                                        size="0.019 0.022"
+                                        density="550"/>
+
+                                    <body name="right_foot">
+                                        <joint
+                                            name="right_ankle_pitch"
+                                            axis="0 1 0"
+                                            range="-45 45"/>
+
+                                        <geom
+                                            name="right_foot_geom"
+                                            type="box"
+                                            pos="0.012 0 -0.023"
+                                            size="0.045 0.032 0.015"
+                                            density="550"
+                                            rgba="0.25 0.25 0.25 1"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>
