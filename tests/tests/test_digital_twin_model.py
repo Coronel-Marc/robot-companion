@@ -27,6 +27,32 @@ ARTICULATED_JOINTS = (
     "right_ankle_pitch",
 )
 
+POSITION_ACTUATORS = (
+    "left_hip_roll_position",
+    "left_hip_pitch_position",
+    "left_knee_pitch_position",
+    "left_ankle_roll_position",
+    "left_ankle_pitch_position",
+    "right_hip_roll_position",
+    "right_hip_pitch_position",
+    "right_knee_pitch_position",
+    "right_ankle_roll_position",
+    "right_ankle_pitch_position",
+)
+
+ACTUATED_JOINTS = (
+    "left_hip_roll",
+    "left_hip_pitch",
+    "left_knee_pitch",
+    "left_ankle_roll",
+    "left_ankle_pitch",
+    "right_hip_roll",
+    "right_hip_pitch",
+    "right_knee_pitch",
+    "right_ankle_roll",
+    "right_ankle_pitch",
+)
+
 EXPECTED_PARENT = {
     "pelvis": "pelvis_root",
     "trunk": "pelvis",
@@ -73,7 +99,7 @@ def test_model_loads_with_expected_degrees_of_freedom() -> None:
     assert model.njnt == 13
     assert model.nq == 19
     assert model.nv == 18
-    assert model.nu == 0
+    assert model.nu == 10
 
     joint_names = {
         _name(model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
@@ -89,6 +115,23 @@ def test_model_loads_with_expected_degrees_of_freedom() -> None:
 
         body_id = int(model.jnt_bodyid[joint_id])
         assert _name(model, mujoco.mjtObj.mjOBJ_BODY, body_id) == body_name
+
+    actuator_names = tuple(
+        _name(model, mujoco.mjtObj.mjOBJ_ACTUATOR, actuator_id)
+        for actuator_id in range(model.nu)
+    )
+    assert actuator_names == POSITION_ACTUATORS
+    assert model.actuator_ctrllimited.all()
+
+    actuator_joint_names = tuple(
+        _name(
+            model,
+            mujoco.mjtObj.mjOBJ_JOINT,
+            int(model.actuator_trnid[actuator_id, 0]),
+        )
+        for actuator_id in range(model.nu)
+    )
+    assert actuator_joint_names == ACTUATED_JOINTS
 
 
 def test_body_tree_matches_the_biped_kinematic_structure() -> None:

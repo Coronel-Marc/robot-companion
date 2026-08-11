@@ -252,4 +252,66 @@
             </body>
         </body>
     </worldbody>
+
+    <actuator>
+        <position
+            name="left_hip_roll_position"
+            joint="left_hip_roll"
+            kp="25"
+            ctrlrange="-0.610865 0.610865"/>
+
+        <position
+            name="left_hip_pitch_position"
+            joint="left_hip_pitch"
+            kp="25"
+            ctrlrange="-1.570796 0.785398"/>
+
+        <position
+            name="left_knee_pitch_position"
+            joint="left_knee_pitch"
+            kp="25"
+            ctrlrange="0 2.268928"/>
+
+        <position
+            name="left_ankle_roll_position"
+            joint="left_ankle_roll"
+            kp="20"
+            ctrlrange="-0.523599 0.523599"/>
+
+        <position
+            name="left_ankle_pitch_position"
+            joint="left_ankle_pitch"
+            kp="20"
+            ctrlrange="-0.785398 0.785398"/>
+
+        <position
+            name="right_hip_roll_position"
+            joint="right_hip_roll"
+            kp="25"
+            ctrlrange="-0.610865 0.610865"/>
+
+        <position
+            name="right_hip_pitch_position"
+            joint="right_hip_pitch"
+            kp="25"
+            ctrlrange="-1.570796 0.785398"/>
+
+        <position
+            name="right_knee_pitch_position"
+            joint="right_knee_pitch"
+            kp="25"
+            ctrlrange="0 2.268928"/>
+
+        <position
+            name="right_ankle_roll_position"
+            joint="right_ankle_roll"
+            kp="20"
+            ctrlrange="-0.523599 0.523599"/>
+
+        <position
+            name="right_ankle_pitch_position"
+            joint="right_ankle_pitch"
+            kp="20"
+            ctrlrange="-0.785398 0.785398"/>
+    </actuator>
 </mujoco>
