@@ -12,7 +12,7 @@ from companion_robot.envs import BipedalTwinEnv
 
 
 def _print_servo_targets(env: BipedalTwinEnv) -> None:
-    print("Neutral action sent to the 10 position servos:")
+    print("Neutral action sent to the nominal pose of the 10 position servos:")
 
     for actuator_id, target_radians in enumerate(env.data.ctrl):
         actuator_name = mujoco.mj_id2name(
@@ -32,7 +32,6 @@ def main() -> None:
 
     try:
         env.reset(seed=0)
-        env.step(neutral_action)
         _print_servo_targets(env)
 
         with mujoco.viewer.launch_passive(env.model, env.data) as viewer:

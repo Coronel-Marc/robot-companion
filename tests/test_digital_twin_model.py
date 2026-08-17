@@ -5,7 +5,7 @@ from pathlib import Path
 import mujoco
 
 MODEL_PATH = (
-    Path(__file__).resolve().parents[2]
+    Path(__file__).resolve().parents[1]
     / "assets"
     / "mujoco"
     / "models"

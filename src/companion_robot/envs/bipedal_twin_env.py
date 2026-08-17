@@ -22,6 +22,38 @@ class BipedalTwinEnv(gym.Env[FloatArray, FloatArray]):
 
     metadata: ClassVar[dict[str, list[str]]] = {"render_modes": []}
 
+    ACTUATED_JOINT_NAMES: ClassVar[tuple[str, ...]] = (
+        "left_hip_roll",
+        "left_hip_pitch",
+        "left_knee_pitch",
+        "left_ankle_roll",
+        "left_ankle_pitch",
+        "right_hip_roll",
+        "right_hip_pitch",
+        "right_knee_pitch",
+        "right_ankle_roll",
+        "right_ankle_pitch",
+    )
+
+    # HIPÓTESE TEMPORÁRIA: flexão sagital suave e simétrica. Hip, knee e
+    # ankle pitch somam zero em cada perna para manter os pés horizontais.
+    NOMINAL_POSE_DEGREES: ClassVar[tuple[float, ...]] = (
+        0.0,
+        -5.0,
+        10.0,
+        0.0,
+        -5.0,
+        0.0,
+        -5.0,
+        10.0,
+        0.0,
+        -5.0,
+    )
+
+    # HIPÓTESE TEMPORÁRIA: altura calculada com as dimensões atuais para
+    # deixar a face inferior dos dois pés aproximadamente em z=0.
+    NOMINAL_ROOT_HEIGHT: ClassVar[float] = 0.292_125
+
     def __init__(self, max_episode_steps: int = 1_000) -> None:
         super().__init__()
 
@@ -36,6 +68,54 @@ class BipedalTwinEnv(gym.Env[FloatArray, FloatArray]):
 
         if not np.all(self.model.actuator_ctrllimited):
             raise ValueError("All actuators must define ctrlrange")
+
+        self.actuated_joint_ids = self.model.actuator_trnid[:, 0].astype(int)
+        actuated_joint_names = tuple(
+            mujoco.mj_id2name(
+                self.model,
+                mujoco.mjtObj.mjOBJ_JOINT,
+                int(joint_id),
+            )
+            for joint_id in self.actuated_joint_ids
+        )
+        if actuated_joint_names != self.ACTUATED_JOINT_NAMES:
+            raise ValueError(
+                "Unexpected actuated joint order: "
+                f"expected {self.ACTUATED_JOINT_NAMES}, got {actuated_joint_names}"
+            )
+
+        if not np.all(self.model.jnt_limited[self.actuated_joint_ids]):
+            raise ValueError("All actuated joints must define physical limits")
+
+        self.actuated_qpos_addresses = self.model.jnt_qposadr[
+            self.actuated_joint_ids
+        ].astype(int)
+        joint_ranges = self.model.jnt_range[self.actuated_joint_ids]
+        actuator_ranges = self.model.actuator_ctrlrange
+        self.target_low = np.maximum(joint_ranges[:, 0], actuator_ranges[:, 0])
+        self.target_high = np.minimum(joint_ranges[:, 1], actuator_ranges[:, 1])
+
+        self.nominal_pose = np.deg2rad(
+            np.asarray(self.NOMINAL_POSE_DEGREES, dtype=np.float64)
+        )
+        if self.nominal_pose.shape != (self.model.nu,):
+            raise ValueError("Nominal pose must define one value per actuator")
+        if np.any(self.nominal_pose < self.target_low) or np.any(
+            self.nominal_pose > self.target_high
+        ):
+            raise ValueError("Nominal pose exceeds an actuated joint limit")
+
+        self.negative_action_scale = self.nominal_pose - self.target_low
+        self.positive_action_scale = self.target_high - self.nominal_pose
+
+        root_joint_id = mujoco.mj_name2id(
+            self.model,
+            mujoco.mjtObj.mjOBJ_JOINT,
+            "root_freejoint",
+        )
+        if root_joint_id < 0:
+            raise ValueError("Model does not contain root_freejoint")
+        self.root_qpos_address = int(self.model.jnt_qposadr[root_joint_id])
 
         self.max_episode_steps = max_episode_steps
         self.current_step = 0
@@ -57,18 +137,23 @@ class BipedalTwinEnv(gym.Env[FloatArray, FloatArray]):
     def _get_observation(self) -> FloatArray:
         return np.concatenate((self.data.qpos, self.data.qvel)).astype(np.float32)
 
-    def _apply_action(self, action: FloatArray) -> None:
+    def _action_to_targets(self, action: FloatArray) -> NDArray[np.float64]:
         normalized_action = np.clip(
             np.asarray(action, dtype=np.float64),
             self.action_space.low,
             self.action_space.high,
         )
-        control_low = self.model.actuator_ctrlrange[:, 0]
-        control_high = self.model.actuator_ctrlrange[:, 1]
-
-        self.data.ctrl[:] = control_low + 0.5 * (normalized_action + 1.0) * (
-            control_high - control_low
+        action_scale = np.where(
+            normalized_action < 0.0,
+            self.negative_action_scale,
+            self.positive_action_scale,
         )
+        targets = self.nominal_pose + normalized_action * action_scale
+
+        return np.clip(targets, self.target_low, self.target_high)
+
+    def _apply_action(self, action: FloatArray) -> None:
+        self.data.ctrl[:] = self._action_to_targets(action)
 
     def reset(
         self,
@@ -80,10 +165,15 @@ class BipedalTwinEnv(gym.Env[FloatArray, FloatArray]):
         del options
 
         mujoco.mj_resetData(self.model, self.data)
+        self.data.qpos[self.actuated_qpos_addresses] = self.nominal_pose
+        self.data.qpos[self.root_qpos_address + 2] = self.NOMINAL_ROOT_HEIGHT
+        self._apply_action(np.zeros(self.model.nu, dtype=np.float32))
         mujoco.mj_forward(self.model, self.data)
         self.current_step = 0
 
-        return self._get_observation(), {}
+        info = {"nominal_pose": self.nominal_pose.copy()}
+
+        return self._get_observation(), info
 
     def step(
         self,
