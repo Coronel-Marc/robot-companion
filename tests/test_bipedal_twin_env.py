@@ -4,7 +4,7 @@ import mujoco
 import numpy as np
 from gymnasium.utils.env_checker import check_env
 
-from companion_robot.envs import BipedalTwinEnv
+from companion_robot.envs import BipedalTwinEnv, ResetPerturbationConfig
 
 
 def test_environment_contract() -> None:
@@ -17,7 +17,10 @@ def test_environment_contract() -> None:
 
 
 def test_zero_action_maps_exactly_to_nominal_pose() -> None:
-    env = BipedalTwinEnv(max_episode_steps=2)
+    env = BipedalTwinEnv(
+        max_episode_steps=2,
+        reset_config=ResetPerturbationConfig(enabled=False),
+    )
     _, reset_info = env.reset(seed=0)
 
     np.testing.assert_array_equal(
@@ -33,7 +36,8 @@ def test_zero_action_maps_exactly_to_nominal_pose() -> None:
 
     np.testing.assert_array_equal(env.data.ctrl, env.nominal_pose)
     assert env.observation_space.contains(observation)
-    assert reward == 0.0
+    assert np.isfinite(reward)
+    assert reward == info["reward_total"]
     assert not terminated
     assert not truncated
     assert info["simulation_time"] > 0.0
@@ -83,7 +87,7 @@ def test_nominal_pose_and_action_scales_are_symmetric() -> None:
 
 
 def test_nominal_pose_keeps_trunk_vertical_and_soles_on_ground() -> None:
-    env = BipedalTwinEnv()
+    env = BipedalTwinEnv(reset_config=ResetPerturbationConfig(enabled=False))
     env.reset(seed=0)
 
     trunk_id = mujoco.mj_name2id(
