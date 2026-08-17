@@ -113,3 +113,44 @@ def test_nominal_pose_keeps_trunk_vertical_and_soles_on_ground() -> None:
         np.testing.assert_allclose(sole_height, 0.0, atol=1e-6)
 
     env.close()
+
+
+def test_hip_yaw_locks_remain_near_zero_and_numerically_stable() -> None:
+    env = BipedalTwinEnv(max_episode_steps=500)
+    hip_yaw_joint_ids = np.asarray(
+        [
+            mujoco.mj_name2id(
+                env.model,
+                mujoco.mjtObj.mjOBJ_JOINT,
+                joint_name,
+            )
+            for joint_name in ("left_hip_yaw", "right_hip_yaw")
+        ]
+    )
+    hip_yaw_qpos_addresses = env.model.jnt_qposadr[hip_yaw_joint_ids]
+    action = np.zeros(env.action_space.shape, dtype=np.float32)
+    maximum_absolute_hip_yaw = 0.0
+
+    for seed in range(10):
+        observation, _ = env.reset(seed=seed)
+        assert np.isfinite(observation).all()
+
+        for _ in range(500):
+            observation, reward, _, _, _ = env.step(action)
+            maximum_absolute_hip_yaw = max(
+                maximum_absolute_hip_yaw,
+                float(np.max(np.abs(env.data.qpos[hip_yaw_qpos_addresses]))),
+            )
+
+            assert np.isfinite(observation).all()
+            assert np.isfinite(reward)
+            assert np.isfinite(env.data.qvel).all()
+            assert np.isfinite(env.data.qacc).all()
+
+        assert all(warning.number == 0 for warning in env.data.warning)
+
+    # HIPOTESE TEMPORARIA de validacao: 0,25 grau e pequeno frente ao range
+    # estrutural de +/-30 graus e deixa margem sobre a deriva numerica observada.
+    assert maximum_absolute_hip_yaw < np.deg2rad(0.25)
+
+    env.close()

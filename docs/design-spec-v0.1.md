@@ -87,7 +87,7 @@ Fase 1
 
 ✓ Primeira perna
 
-⬜ Primeiro bípede
+✓ Primeiro bípede — Digital Twin v0.1, Etapas 1–6
 
 ⬜ RL para equilíbrio
 

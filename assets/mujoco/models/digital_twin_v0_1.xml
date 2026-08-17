@@ -253,6 +253,18 @@
         </body>
     </worldbody>
 
+    <equality>
+        <joint
+            name="left_hip_yaw_lock"
+            joint1="left_hip_yaw"
+            polycoef="0 0 0 0 0"/>
+
+        <joint
+            name="right_hip_yaw_lock"
+            joint1="right_hip_yaw"
+            polycoef="0 0 0 0 0"/>
+    </equality>
+
     <actuator>
         <position
             name="left_hip_roll_position"

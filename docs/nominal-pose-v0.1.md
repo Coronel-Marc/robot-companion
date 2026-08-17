@@ -4,6 +4,9 @@ Os valores desta nota são **HIPÓTESES TEMPORÁRIAS** da Etapa 3.5. Eles
 definem o significado da ação neutra e não afirmam que o robô consegue se
 equilibrar passivamente.
 
+O registro canônico de classificação e rastreabilidade desses valores está em
+`docs/digital-twin-assumptions-v0.1.md`.
+
 ## Ângulos nominais
 
 | Articulação | Esquerda | Direita | Justificativa |
@@ -18,10 +21,18 @@ Em cada perna, `hip_pitch + knee_pitch + ankle_pitch = 0°`. Com o tronco
 preso rigidamente à pelve e o `freejoint` sem rotação inicial, isso mantém o
 tronco vertical e os pés paralelos ao chão.
 
-A altura inicial da raiz, `0,292125 m`, também é uma **HIPÓTESE TEMPORÁRIA**.
-Ela foi calculada a partir das dimensões atuais da coxa, canela e pé para
-posicionar a face inferior das solas aproximadamente em `z=0`, sem alterar
-geometrias, massas, gravidade, atrito ou centro de massa.
+A altura inicial da raiz, `0,292125 m`, é um **VALOR DERIVADO** das hipóteses
+de geometria e pose atuais. Ela foi calculada para posicionar a face inferior
+das solas aproximadamente em `z=0`, sem alterar geometrias, massas, gravidade,
+atrito ou centro de massa. Se essas hipóteses mudarem, a altura deve ser
+recalculada.
+
+Esse valor não é o mesmo que o `pos="0 0 0.303"` do `pelvis_root` no MJCF. O
+estado cru do XML usa todas as juntas em `0°` e deixa as solas `0,010 m` acima
+do piso. O ambiente aplica a pose nominal flexionada e sobrescreve a altura para
+apoiar as solas. A diferença é esperada entre esses dois contextos e está
+derivada em `docs/digital-twin-assumptions-v0.1.md`; nenhum dos valores deve ser
+alterado isoladamente sem revisar pose, geometria e testes.
 
 ## Mapeamento da ação
 
